@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Like Button</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+  <style type="text/css">
+    .like-button {
+  background-color: #ced4da;
+  color: #495057;
+  border: 1px solid #adb5bd;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.like-button:hover {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.like-button.clicked {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
+}
+
+.like-button.clicked:hover {
+  background-color: #c82333;
+  border-color: #c82333;
+}
+
+.loader {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid #fff;
+  border-top: 3px solid transparent;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+  </style>
+</head>
+<body>
+  <button id="likeButton" class="like-button">
+    <i class="far fa-heart"></i> Like
+    <div class="loader"></div>
+  </button>
+
+  <script>
+    const likeButton = document.getElementById('likeButton');
+    let isClicked = false;
+
+likeButton.addEventListener('click', function() {
+  if (!isClicked) {
+    likeButton.classList.add('clicked');
+    isClicked = true;
+    // Simulating backend request delay
+    likeButton.querySelector('.loader').style.display = 'block';
+    setTimeout(() => {
+      // Simulating backend request success
+      likeButton.querySelector('.loader').style.display = 'none';
+    }, 2000); // Adjust delay as per actual backend response time
+  }
+});
+
+  </script>
+</body>
+</html>
