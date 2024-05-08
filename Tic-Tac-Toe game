@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac-Toe</title>
+  <style type="text/css">
+    .game-board {
+  display: grid;
+  grid-template-columns: repeat(3, 100px);
+  grid-template-rows: repeat(3, 100px);
+  gap: 2px;
+  margin-bottom: 10px;
+}
+
+.cell {
+  border: 1px solid #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.status {
+  font-size: 18px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="game-board" id="gameBoard">
+    <div class="cell" id="cell-0"></div>
+    <div class="cell" id="cell-1"></div>
+    <div class="cell" id="cell-2"></div>
+    <div class="cell" id="cell-3"></div>
+    <div class="cell" id="cell-4"></div>
+    <div class="cell" id="cell-5"></div>
+    <div class="cell" id="cell-6"></div>
+    <div class="cell" id="cell-7"></div>
+    <div class="cell" id="cell-8"></div>
+  </div>
+  <div id="status" class="status"></div>
+
+  <script>
+    const gameBoard = document.getElementById('gameBoard');
+const cells = document.querySelectorAll('.cell');
+const status = document.getElementById('status');
+
+let currentPlayer = 'X';
+let moves = 0;
+let gameEnded = false;
+
+function checkWinner() {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+
+  for (let i = 0; i < lines.length; i++) {
+    const [a, b, c] = lines[i];
+    if (cells[a].textContent && cells[a].textContent === cells[b].textContent && cells[a].textContent === cells[c].textContent) {
+      return cells[a].textContent;
+    }
+  }
+
+  return null;
+}
+
+function handleClick() {
+  if (gameEnded || this.textContent) return;
+
+  this.textContent = currentPlayer;
+  moves++;
+
+  const winner = checkWinner();
+  if (winner) {
+    status.textContent = `Player ${winner} wins!`;
+    gameEnded = true;
+  } else if (moves === 9) {
+    status.textContent = `It's a draw!`;
+    gameEnded = true;
+  } else {
+    currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+    status.textContent = `Current player: ${currentPlayer}`;
+  }
+}
+
+function restartGame() {
+  cells.forEach(cell => {
+    cell.textContent = '';
+  });
+  currentPlayer = 'X';
+  moves = 0;
+  gameEnded = false;
+  status.textContent = `Current player: ${currentPlayer}`;
+}
+
+cells.forEach(cell => {
+  cell.addEventListener('click', handleClick);
+});
+
+status.textContent = `Current player: ${currentPlayer}`;
+
+  </script>
+</body>
+</html>
