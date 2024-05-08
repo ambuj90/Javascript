@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table</title>
+    <link rel="stylesheet" href="styles.css">
+    <style type="text/css">table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    cursor: pointer;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+</style>
+</head>
+<body>
+    <input type="text" id="searchInput" placeholder="Search...">
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th onclick="sortTable(0)">Name</th>
+                <th onclick="sortTable(1)">Age</th>
+                <th onclick="sortTable(2)">Country</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+    <script>
+        const data = [
+    { name: "Ambuj", age: 30, country: "India" },
+    { name: "Alice", age: 25, country: "Canada" },
+    { name: "Bob", age: 35, country: "UK" },
+    { name: "John", age: 35, country: "UK" },
+    // Add more data as needed
+];
+
+const dataTable = document.getElementById('dataTable');
+const tableBody = document.getElementById('tableBody');
+const searchInput = document.getElementById('searchInput');
+
+// Display initial data
+displayData(data);
+
+// Function to display data in the table
+function displayData(data) {
+    tableBody.innerHTML = '';
+    data.forEach(item => {
+        const row = tableBody.insertRow();
+        row.innerHTML = `<td>${item.name}</td><td>${item.age}</td><td>${item.country}</td>`;
+    });
+}
+
+// Function to sort the table by column index
+function sortTable(colIndex) {
+    const sortedData = [...data];
+    sortedData.sort((a, b) => {
+        if (a[Object.keys(a)[colIndex]] < b[Object.keys(b)[colIndex]]) return -1;
+        if (a[Object.keys(a)[colIndex]] > b[Object.keys(b)[colIndex]]) return 1;
+        return 0;
+    });
+    displayData(sortedData);
+}
+
+// Function to filter data based on search input
+searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filteredData = data.filter(item => {
+        return Object.values(item).some(value => value.toString().toLowerCase().includes(searchTerm));
+    });
+    displayData(filteredData);
+});
+
+    </script>
+</body>
+</html>
