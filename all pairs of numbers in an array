@@ -1,0 +1,20 @@
+function findPairs(array, target) {
+    const seen = new Set();
+    const pairs = [];
+
+    for (let num of array) {
+        const complement = target - num;
+        if (seen.has(complement)) {
+            pairs.push([num, complement]);
+        }
+        seen.add(num);
+    }
+
+    return pairs;
+}
+
+// Example usage:
+const array = [1, 2, 3, 4, 5, 6];
+const target = 7;
+const pairs = findPairs(array, target);
+console.log("Pairs with sum", target, ":", pairs);
