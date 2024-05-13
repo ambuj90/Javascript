@@ -1,0 +1,23 @@
+// DateComponent.js
+class DateComponent {
+  constructor(date) {
+    this.date = date;
+  }
+
+  // Method to format the date
+  formatDate() {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return this.date.toLocaleDateString('en-US', options);
+  }
+
+  // Method to render the formatted date
+  render() {
+    const formattedDate = this.formatDate();
+    return `<div>${formattedDate}</div>`;
+  }
+}
+
+// Example usage
+const currentDate = new Date();
+const dateComponent = new DateComponent(currentDate);
+console.log(dateComponent.render());
