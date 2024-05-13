@@ -1,0 +1,19 @@
+function mean(array) {
+    // Check if the input array is empty
+    if (array.length === 0) {
+        return NaN; // Return NaN for an empty array
+    }
+
+    // Calculate the sum of all numbers in the array
+    const sum = array.reduce((acc, curr) => acc + curr, 0);
+
+    // Calculate the mean by dividing the sum by the number of elements in the array
+    return sum / array.length;
+}
+
+// Example usage
+const array1 = [1, 2, 3, 4, 5];
+console.log(mean(array1)); // Output: 3
+
+const array2 = [];
+console.log(mean(array2)); // Output: NaN (empty array)
