@@ -1,0 +1,65 @@
+<script type="text/javascript">
+
+    function convertToJSON(value) {
+    try {
+        const jsonString = JSON.stringify(value);
+        return jsonString;
+    } catch (error) {
+        console.error("Error converting to JSON:", error);
+        return null;
+    }
+}
+
+// Example usage
+const obj = { name: "John", age: 30 };
+const jsonString = convertToJSON(obj);
+console.log(jsonString); // Output: '{"name":"John","age":30}'
+
+
+function constructTableOfContents(htmlContent) {
+    // Create a temporary container element to parse the HTML content
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = htmlContent;
+
+    // Find all headings in the HTML content
+    const headings = tempContainer.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+    // Initialize an empty array to store table of contents entries
+    const tocEntries = [];
+
+    // Iterate through the headings and construct table of contents entries
+    headings.forEach((heading) => {
+        const tagName = heading.tagName.toLowerCase(); // Get the tag name (e.g., h1, h2)
+        const text = heading.textContent.trim(); // Get the text content of the heading
+        const id = heading.id; // Get the id attribute of the heading (if any)
+
+        // Create a table of contents entry object
+        const entry = {
+            level: parseInt(tagName.slice(1)), // Extract the heading level (e.g., h1 -> 1)
+            text: text,
+            id: id || `toc-${tocEntries.length + 1}` // Generate a unique id if id attribute is missing
+        };
+
+        // Add the entry to the table of contents
+        tocEntries.push(entry);
+    });
+
+    // Return the constructed table of contents entries
+    return tocEntries;
+}
+
+// Example usage
+const htmlContent = `
+    <h1>Main Title</h1>
+    <h2>Section 1</h2>
+    <h3>Subsection 1.1</h3>
+    <h3>Subsection 1.2</h3>
+    <h2>Section 2</h2>
+    <h3>Subsection 2.1</h3>
+    <h2>Section 3</h2>
+`;
+const toc = constructTableOfContents(htmlContent);
+console.log(toc);
+
+
+</script>
