@@ -1,0 +1,14 @@
+function convertToJSON(value) {
+    try {
+        const jsonString = JSON.stringify(value);
+        return jsonString;
+    } catch (error) {
+        console.error("Error converting to JSON:", error);
+        return null;
+    }
+}
+
+// Example usage
+const obj = { name: "John", age: 30 };
+const jsonString = convertToJSON(obj);
+console.log(jsonString); // Output: '{"name":"John","age":30}'
