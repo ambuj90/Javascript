@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title> horizontal layout using flexbox</title>
+  <style type="text/css">
+    #container {
+  display: flex;
+  flex-wrap: nowrap; /* Horizontal layout */
+  overflow-x: auto; /* Enable horizontal scrolling */
+  gap: 10px; /* Space between boxes */
+}
+
+.box {
+  width: 100px;
+  height: 100px;
+  background-color: #ccc;
+}
+
+  </style>
+</head>
+<body>
+<div id="container">
+  <!-- Boxes representing mailing addresses -->
+</div>
+<button id="nextBtn">Next</button>
+<button id="submitBtn">Submit</button>
+
+
+<script type="text/javascript">
+  const container = document.getElementById('container');
+const nextBtn = document.getElementById('nextBtn');
+const submitBtn = document.getElementById('submitBtn');
+let currentIndex = 0;
+
+// Function to create boxes representing mailing addresses
+function createBoxes(startIndex, count) {
+  for (let i = startIndex; i < startIndex + count; i++) {
+    const box = document.createElement('div');
+    box.classList.add('box');
+    box.textContent = `Address ${i+1}`;
+    container.appendChild(box);
+  }
+}
+
+// Function to remove existing boxes
+function clearBoxes() {
+  container.innerHTML = '';
+}
+
+// Function to handle "Next" button click
+nextBtn.addEventListener('click', function() {
+  clearBoxes();
+  const batchSize = 5;
+  createBoxes(currentIndex, batchSize);
+  currentIndex += batchSize;
+});
+
+// Function to handle "Submit" button click (backend operation)
+submitBtn.addEventListener('click', function() {
+  // Perform backend operation (e.g., submit data to server)
+  console.log('Submitting data to backend...');
+});
+
+// Initial creation of boxes
+createBoxes(currentIndex, 5);
+currentIndex += 5;
+
+</script>
+</body>
+</html>
