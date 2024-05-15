@@ -1,0 +1,36 @@
+//Using the Math.max function with the spread operator:
+
+function findMax(array) {
+    if (array.length === 0) {
+        throw new Error("Array is empty");
+    }
+    return Math.max(...array);
+}
+
+// Example usage:
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const maxNumber = findMax(numbers);
+console.log(maxNumber); // Output: 9
+//-------------------------------------------------------------------------
+//Using a for loop:
+
+function findMax(array) {
+    if (array.length === 0) {
+        throw new Error("Array is empty");
+    }
+    
+    let max = array[0];
+    
+    for (let i = 1; i < array.length; i++) {
+        if (array[i] > max) {
+            max = array[i];
+        }
+    }
+    
+    return max;
+}
+
+// Example usage:
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const maxNumber = findMax(numbers);
+console.log(maxNumber); // Output: 9
