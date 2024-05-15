@@ -1,0 +1,21 @@
+function createNumberAdder() {
+    let sum = 0;
+
+    return function addNumber(num) {
+        if (typeof num === 'number') {
+            sum += num;
+            return addNumber; // Return the function itself to allow for chaining
+        } else {
+            const result = sum;
+            sum = 0; // Reset sum for subsequent calls
+            return result;
+        }
+    };
+}
+
+// Example usage
+const adder = createNumberAdder();
+
+console.log(adder(5)(10)(15)(20)()); // Output: 50 (sum of 5, 10, 15, and 20)
+console.log(adder(1)(2)(3)(4)());   // Output: 10 (sum of 1, 2, 3, and 4)
+console.log(adder());               // Output: 0 (no numbers provided)
