@@ -1,0 +1,581 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Canvas Meme Generator</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<style type="text/css">
+    h1 {
+    color: #fff;
+}
+
+body {
+    background: #00308F;
+}
+
+p {
+    color: #fff;
+}
+body {
+    background-color: #8dcbff;
+  }
+  .canvas-container {
+    width: 100%;
+    max-width: 620px;
+    height: 580px;
+    margin: 0 auto;
+    overflow: hidden;
+    background-color: lightgrey;
+  }
+     /* Gallery Container Styles */
+     .gallery-container {
+        max-height: 400px; /* Adjust as needed */
+        overflow-y: auto;
+        
+    }
+        /* Optional: Add any custom styles here */
+        .canvas-container {
+            position: relative;
+          }
+
+    /* Optional: Add any custom styles here */
+    .canvas-container {
+        position: relative;
+    }
+  .title-top {
+    font-size: 35px;
+    padding: 20px 0;
+    text-align: center;
+  }
+  .all-buttons {
+    text-align: center;
+  }
+  .all-gallery {
+    text-align: center;
+    padding: 20px 0;
+    font-size: 25px;
+  }
+  .gallery-container {
+    height: 500px;
+    overflow-y: scroll;
+  }
+  .gallery-image {
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 768px) {
+    .canvas-container {
+      max-width: 100%;
+      max-height: 400px;
+    }
+    .gallery-container {
+      height: 300px;
+    }
+  }
+  @media (max-width: 576px) {
+    .canvas-container {
+      max-height: 300px;
+    }
+    .gallery-container {
+      height: 200px;
+    }
+  }
+.container::before {
+    content: '';
+    background: #D3832B;
+    width: 6px;
+    position: absolute;
+}
+.container{
+position:relative
+}
+.container:after {
+    width: 70vmin;
+    height: 70vmin;
+    left: auto;
+    right: -10vmin;
+    top: auto;
+    bottom: 0;
+    animation: morph 10s linear infinite alternate, spin 26s linear infinite reverse;
+    transform-origin: 20% 20%;
+}
+.container:before, .container:after {
+    content: "";
+    width: 70vmax;
+    height: 70vmax;
+    position: absolute;
+    background: rgba(255,255,255,.07);
+    left: -20vmin;
+    top: -20vmin;
+    animation: morph 15s linear infinite alternate,spin 20s linear infinite;
+    z-index: 1;
+    will-change: border-radius,transform;
+    transform-origin: 55% 55%;
+    pointer-events: none
+}
+
+.container:after {
+    width: 70vmin;
+    height: 70vmin;
+    left: auto;
+    right: -10vmin;
+    top: auto;
+    bottom: 0;
+    animation: morph 10s linear infinite alternate,spin 26s linear infinite reverse;
+    transform-origin: 20% 20%
+}
+
+
+@keyframes morph {
+    0% {
+        border-radius: 40% 60% 60% 40%/70% 30%
+    }
+
+    to {
+        border-radius: 40% 60%
+    }
+}
+</style>
+
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row mt-4 justify-content-center">
+      <!-- Controls Column -->
+      <div class="col-lg-3 col-md-4 col-sm-12 border border-2 rounded-3 bg-white mb-4">
+        <h1 class="title-top">$Zazu Meme Maker</h1>
+        <div class="form-group mb-3">
+          <label for="imageUpload">Upload Images</label>
+          <input type="file" class="form-control-file" id="imageUpload" accept="image/*" multiple>
+        </div>
+        <button id="addTextButton" class="btn btn-primary mb-3">Add Text</button>
+        <div id="textControls" style="display: none;">
+          <label for="fontSizeSelect">Font Size</label>
+          <select id="fontSizeSelect" class="form-control mb-2">
+            <option value="40">H1</option>
+            <option value="32">H2</option>
+            <option value="24">H3</option>
+            <option value="20">H4</option>
+            <option value="18">H5</option>
+            <option value="16">H6</option>
+          </select>
+          <label for="fontFamilySelect">Font Family</label>
+          <select id="fontFamilySelect" class="form-control mb-2">
+            <option value="Arial">Arial</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Times New Roman">Times New Roman</option>
+          </select>
+          <label for="fontWeightSelect">Font Weight</label>
+          <select id="fontWeightSelect" class="form-control mb-2">
+            <option value="normal">Normal</option>
+            <option value="bold">Bold</option>
+          </select>
+          <label for="textEditInput">Edit Text</label>
+          <input type="text" id="textEditInput" class="form-control mb-2">
+          <label for="textColorInput">Text Color</label>
+          <input type="color" id="textColorInput" class="form-control">
+        </div>
+      </div>
+      
+      <!-- Canvas Column -->
+      <div class="col-lg-5 col-md-8 col-sm-12 mb-4">
+        <div id="canvasContainer" class="canvas-container border border-2 rounded-3 bg-white">
+          <canvas id="memeCanvas" width="620" height="580"></canvas>
+        </div>
+        <div class="mt-3 mb-2 all-buttons">
+          <button id="resetCanvasButton" class="btn btn-danger">Reset</button>
+          <button id="exportCanvasButton" class="btn btn-success">Download Meme</button>
+          <button id="toggleCanvasSizeButton" class="btn btn-secondary">Toggle Template Size</button>
+          <button id="deleteElementButton" class="btn btn-warning">Delete Selected</button> <!-- New Delete Button -->
+        </div>
+      </div>
+      
+      <!-- Gallery Column -->
+      <div class="col-lg-3 col-md-4 col-sm-12 border border-2 rounded-3 bg-white mb-4">
+        <h4 class="all-gallery">Template Gallery</h4>
+        <div id="gallery-container" class="gallery-container">
+          <div class="row" id="gallery-row"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+ <script type="text/javascript">
+     const canvas = document.getElementById('memeCanvas');
+const ctx = canvas.getContext('2d');
+let elements = [];
+let templateImage = null;
+let defaultImage = null;
+let selectedElement = null;
+let isDragging = false;
+let isResizing = false;
+let isTemplateMinimized = false;
+let templateImageX = 0;
+let templateImageY = 0;
+
+// Load default background image
+const defaultBackground = new Image();
+defaultBackground.src = './images/by-default.png';
+defaultBackground.onload = () => {
+    defaultImage = defaultBackground;
+    templateImage = defaultBackground;
+    drawCanvas();
+};
+
+function drawCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+    const { width, height } = calculateTemplateSize();
+    if (templateImage) {
+        ctx.drawImage(templateImage, templateImageX, templateImageY, width, height);
+    }
+    elements.forEach(el => {
+        if (el.type === 'image') {
+            ctx.drawImage(el.image, el.x, el.y, el.width, el.height);
+            if (el === selectedElement) {
+                // Draw border around selected image
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(el.x, el.y, el.width, el.height);
+
+                // Draw resize handle
+                ctx.fillStyle = 'red';
+                ctx.fillRect(el.x + el.width - 10, el.y + el.height - 10, 10, 10);
+            }
+        } else if (el.type === 'text') {
+            drawWrappedText(el.text, el.x, el.y, el.fontSize, el.fontFamily, el.fontWeight, el.fill);
+            if (el === selectedElement) {
+                // Draw border around selected text
+                const textWidth = ctx.measureText(el.text).width;
+                const textHeight = el.fontSize;
+                ctx.strokeStyle = 'blue';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(el.x, el.y - textHeight, textWidth, textHeight);
+            }
+        }
+    });
+}
+
+function calculateTemplateSize() {
+    return isTemplateMinimized
+        ? { width: canvas.width / 2, height: canvas.height / 2 }
+        : { width: canvas.width, height: canvas.height };
+}
+
+function drawWrappedText(text, x, y, fontSize, fontFamily, fontWeight, fillColor) {
+    const maxWidth = canvas.width - 20;
+    const lineHeight = fontSize * 1.2;
+
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = fillColor;
+
+    const words = text.split(' ');
+    let line = '';
+    let lineY = y;
+
+    words.forEach((word) => {
+        const testLine = line + word + ' ';
+        const testWidth = ctx.measureText(testLine).width;
+
+        if (testWidth > maxWidth && line.length > 0) {
+            ctx.fillText(line, x, lineY);
+            line = word + ' ';
+            lineY += lineHeight;
+        } else {
+            line = testLine;
+        }
+    });
+
+    ctx.fillText(line, x, lineY);
+}
+
+document.getElementById('addTextButton').addEventListener('click', () => {
+    const newText = {
+        type: 'text',
+        text: 'Editable Text',
+        x: 50,
+        y: 50,
+        fontSize: 24,
+        fontWeight: 'normal',
+        fontFamily: 'Arial',
+        fill: '#000000',
+    };
+    elements.push(newText);
+    drawCanvas();
+    selectedElement = newText;
+    document.getElementById('textControls').style.display = 'block';
+    document.getElementById('textEditInput').value = newText.text;
+    document.getElementById('textColorInput').value = newText.fill;
+    document.getElementById('fontSizeSelect').value = newText.fontSize;
+    document.getElementById('fontFamilySelect').value = newText.fontFamily;
+    document.getElementById('fontWeightSelect').value = newText.fontWeight;
+});
+
+document.getElementById('imageUpload').addEventListener('change', (e) => {
+    const files = e.target.files;
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.src = reader.result;
+            img.onload = () => {
+                const newImage = {
+                    type: 'image',
+                    image: img,
+                    x: 50,
+                    y: 50,
+                    width: 200,
+                    height: 200,
+                };
+                elements.push(newImage);
+                drawCanvas();
+            };
+        };
+        reader.readAsDataURL(file);
+    });
+});
+
+document.getElementById('toggleCanvasSizeButton').addEventListener('click', () => {
+    isTemplateMinimized = !isTemplateMinimized;
+    drawCanvas();
+});
+
+// New Function to Handle Adding Gallery Images as Elements
+function handleAddGalleryImage(imageUrl) {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+        const newImage = {
+            type: 'image',
+            image: img,
+            x: 100, // Starting X position
+            y: 100, // Starting Y position
+            width: 200, // Default width
+            height: 200, // Default height
+        };
+        elements.push(newImage);
+        templateImage = null; // Remove the template image
+        drawCanvas();
+    };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+    const mouseX = e.offsetX;
+    const mouseY = e.offsetY;
+
+    const { width, height } = calculateTemplateSize();
+    if (
+        templateImage &&
+        mouseX >= templateImageX &&
+        mouseX <= templateImageX + width &&
+        mouseY >= templateImageY &&
+        mouseY <= templateImageY + height
+    ) {
+        selectedElement = 'template';
+        isDragging = true;
+    } else {
+        selectedElement = null;
+        // Iterate from top to bottom to select the topmost element
+        for (let i = elements.length - 1; i >= 0; i--) {
+            const el = elements[i];
+            if (el.type === 'image') {
+                if (
+                    mouseX >= el.x &&
+                    mouseX <= el.x + el.width &&
+                    mouseY >= el.y &&
+                    mouseY <= el.y + el.height
+                ) {
+                    // Check if clicking on the resize handle
+                    if (
+                        mouseX >= el.x + el.width - 10 &&
+                        mouseY >= el.y + el.height - 10
+                    ) {
+                        isResizing = true;
+                    } else {
+                        isDragging = true;
+                    }
+                    selectedElement = el;
+                    // Bring the selected element to the top
+                    elements.splice(i, 1);
+                    elements.push(el);
+                    break;
+                }
+            } else if (el.type === 'text') {
+                const textWidth = ctx.measureText(el.text).width;
+                const textHeight = el.fontSize;
+                if (
+                    mouseX >= el.x &&
+                    mouseX <= el.x + textWidth &&
+                    mouseY >= el.y - textHeight &&
+                    mouseY <= el.y
+                ) {
+                    isDragging = true;
+                    selectedElement = el;
+                    // Bring the selected element to the top
+                    elements.splice(i, 1);
+                    elements.push(el);
+                    break;
+                }
+            }
+        }
+
+        if (selectedElement && selectedElement.type === 'text') {
+            document.getElementById('textControls').style.display = 'block';
+            document.getElementById('textEditInput').value = selectedElement.text;
+            document.getElementById('textColorInput').value = selectedElement.fill;
+            document.getElementById('fontSizeSelect').value = selectedElement.fontSize;
+            document.getElementById('fontFamilySelect').value = selectedElement.fontFamily;
+            document.getElementById('fontWeightSelect').value = selectedElement.fontWeight;
+        } else {
+            document.getElementById('textControls').style.display = 'none';
+        }
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    const mouseX = e.offsetX;
+    const mouseY = e.offsetY;
+
+    // Change cursor style
+    if (selectedElement && selectedElement.type === 'image') {
+        const onResizeHandle =
+            mouseX >= selectedElement.x + selectedElement.width - 10 &&
+            mouseY >= selectedElement.y + selectedElement.height - 10;
+        canvas.style.cursor = onResizeHandle ? 'nwse-resize' : 'move';
+    } else {
+        canvas.style.cursor = 'default';
+    }
+
+    if (isDragging && selectedElement) {
+        if (selectedElement === 'template') {
+            templateImageX = mouseX - calculateTemplateSize().width / 2;
+            templateImageY = mouseY - calculateTemplateSize().height / 2;
+        } else if (selectedElement.type === 'image') {
+            selectedElement.x = mouseX - selectedElement.width / 2;
+            selectedElement.y = mouseY - selectedElement.height / 2;
+        } else if (selectedElement.type === 'text') {
+            selectedElement.x = mouseX - ctx.measureText(selectedElement.text).width / 2;
+            selectedElement.y = mouseY;
+        }
+        drawCanvas();
+    }
+
+    if (isResizing && selectedElement && selectedElement.type === 'image') {
+        const newWidth = mouseX - selectedElement.x;
+        const newHeight = mouseY - selectedElement.y;
+
+        // Set minimum and maximum size constraints
+        const minSize = 20;
+        const maxWidth = canvas.width - selectedElement.x;
+        const maxHeight = canvas.height - selectedElement.y;
+
+        selectedElement.width = Math.max(minSize, Math.min(newWidth, maxWidth));
+        selectedElement.height = Math.max(minSize, Math.min(newHeight, maxHeight));
+
+        drawCanvas();
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+    isResizing = false;
+});
+
+document.getElementById('textEditInput').addEventListener('input', (e) => {
+    if (selectedElement && selectedElement.type === 'text') {
+        selectedElement.text = e.target.value;
+        drawCanvas();
+    }
+});
+
+document.getElementById('textColorInput').addEventListener('input', (e) => {
+    if (selectedElement && selectedElement.type === 'text') {
+        selectedElement.fill = e.target.value;
+        drawCanvas();
+    }
+});
+
+document.getElementById('fontSizeSelect').addEventListener('change', (e) => {
+    if (selectedElement && selectedElement.type === 'text') {
+        selectedElement.fontSize = parseInt(e.target.value);
+        drawCanvas();
+    }
+});
+
+document.getElementById('fontFamilySelect').addEventListener('change', (e) => {
+    if (selectedElement && selectedElement.type === 'text') {
+        selectedElement.fontFamily = e.target.value;
+        drawCanvas();
+    }
+});
+
+document.getElementById('fontWeightSelect').addEventListener('change', (e) => {
+    if (selectedElement && selectedElement.type === 'text') {
+        selectedElement.fontWeight = e.target.value;
+        drawCanvas();
+    }
+});
+
+// Delete Selected Element
+document.getElementById('deleteElementButton').addEventListener('click', () => {
+    if (selectedElement && selectedElement !== 'template') {
+        elements = elements.filter(el => el !== selectedElement);
+        selectedElement = null;
+        drawCanvas();
+        document.getElementById('textControls').style.display = 'none';
+    }
+});
+
+document.getElementById('resetCanvasButton').addEventListener('click', () => {
+    elements = [];
+    templateImage = defaultImage;
+    templateImageX = 0;
+    templateImageY = 0;
+    drawCanvas();
+    selectedElement = null;
+    document.getElementById('textControls').style.display = 'none';
+});
+
+document.getElementById('exportCanvasButton').addEventListener('click', () => {
+    const link = document.createElement('a');
+    link.download = 'meme.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+});
+
+const galleryImages = Array.from({ length: 101 }, (_, index) => `./images/${index + 1}.jpg`);
+
+function loadGalleryImages() {
+    const galleryRow = document.getElementById('gallery-row');
+    galleryImages.forEach((imageUrl) => {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'col-xs-6 col-md-4 mb-3'; // Added mb-3 for spacing
+        const imgElement = document.createElement('img');
+        imgElement.src = imageUrl;
+        imgElement.className = 'img-fluid gallery-image';
+        imgElement.style.cursor = 'pointer';
+        imgElement.onclick = () => handleAddGalleryImage(imageUrl); // Updated onclick
+        colDiv.appendChild(imgElement);
+        galleryRow.appendChild(colDiv);
+    });
+}
+
+//Removed handleAddTemplateImage function as it's no longer needed
+function handleAddTemplateImage(imageUrl) {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+        templateImage = img;
+        drawCanvas();
+    };
+}
+
+
+
+window.onload = loadGalleryImages;
+ </script>
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+
+</body>
+</html>
