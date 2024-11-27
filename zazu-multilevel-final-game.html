@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat Puzzle Game</title>
+ <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top, #ff9a9e, #fad0c4);
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      animation: bgAnimation 10s infinite alternate ease-in-out;
+    }
+
+    @keyframes bgAnimation {
+      0% {
+        background: radial-gradient(circle at top, #ff9a9e, #fad0c4);
+      }
+      100% {
+        background: radial-gradient(circle at bottom, #fad0c4, #ff9a9e);
+      }
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #fff;
+      text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6);
+      animation: titleGlow 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes titleGlow {
+      0% {
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px #ff9a9e, 0 0 40px #fad0c4;
+      }
+      100% {
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6), 0 0 30px #fad0c4, 0 0 60px #ff9a9e;
+      }
+    }
+
+    canvas {
+      border: 5px solid rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    canvas:hover {
+      transform: scale(1.05);
+    }
+
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      color: #fff;
+      background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+      transform: translateY(-4px);
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    #level {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #fff;
+      margin-top: 30px;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    #message {
+      margin-top: 20px;
+      font-size: 2rem;
+      color: #fff;
+      text-align: center;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+      animation: messagePop 1.5s ease-out;
+    }
+
+    @keyframes messagePop {
+      0% {
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .end-message {
+      font-size: 3rem;
+      color: #fff;
+      text-align: center;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+      animation: endMessageGlow 3s infinite alternate ease-in-out;
+    }
+
+    @keyframes endMessageGlow {
+      0% {
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6), 0 0 20px #6a11cb, 0 0 40px #2575fc;
+      }
+      100% {
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.6), 0 0 30px #2575fc, 0 0 60px #6a11cb;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Cat Puzzle Game</h1>
+  <canvas id="puzzleCanvas" width="400" height="400"></canvas>
+  <div id="controls">
+    <button id="shuffle">Shuffle</button>
+    <button id="reset">Reset</button>
+    <button id="nextLevel" disabled>Next Level</button>
+  </div>
+  <div id="level">Level: <span id="levelDisplay">1</span></div>
+  <h4 id="message"></h4>
+
+  <script>
+    const levels = [
+      { rows: 2, cols: 2, image: './images/level-1.jpg' },
+      { rows: 3, cols: 3, image: './images/level-2.jpg' },
+      { rows: 4, cols: 4, image: './images/level-5.jpg' },
+      { rows: 5, cols: 5, image: './images/level-6.jpg' }
+    ];
+
+    let currentLevel = 0;
+
+    const canvas = document.getElementById('puzzleCanvas');
+    const ctx = canvas.getContext('2d');
+    const shuffleButton = document.getElementById('shuffle');
+    const resetButton = document.getElementById('reset');
+    const nextLevelButton = document.getElementById('nextLevel');
+    const levelDisplay = document.getElementById('levelDisplay');
+    const messageDisplay = document.getElementById('message');
+
+    let board = null;
+    let draggingPiece = null;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    class JigsawPiece {
+      constructor(x, y, width, height, image, correctX, correctY) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.image = image;
+        this.correctX = correctX;
+        this.correctY = correctY;
+      }
+
+      isCorrect() {
+        return this.x === this.correctX && this.y === this.correctY;
+      }
+
+      draw(ctx) {
+        ctx.drawImage(
+          this.image,
+          this.correctX,
+          this.correctY,
+          this.width,
+          this.height,
+          this.x,
+          this.y,
+          this.width,
+          this.height
+        );
+        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.strokeRect(this.x, this.y, this.width, this.height);
+      }
+
+      contains(x, y) {
+        return x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+      }
+    }
+
+    class JigsawBoard {
+      constructor(rows, cols, image) {
+        this.rows = rows;
+        this.cols = cols;
+        this.image = image;
+        this.pieces = [];
+        this.tileWidth = canvas.width / cols;
+        this.tileHeight = canvas.height / rows;
+
+        this.initPieces();
+      }
+
+      initPieces() {
+        this.pieces = [];
+        for (let row = 0; row < this.rows; row++) {
+          for (let col = 0; col < this.cols; col++) {
+            this.pieces.push(
+              new JigsawPiece(
+                col * this.tileWidth,
+                row * this.tileHeight,
+                this.tileWidth,
+                this.tileHeight,
+                this.image,
+                col * this.tileWidth,
+                row * this.tileHeight
+              )
+            );
+          }
+        }
+      }
+
+      shuffle() {
+        this.pieces.forEach((piece) => {
+          piece.x = Math.random() * (canvas.width - piece.width);
+          piece.y = Math.random() * (canvas.height - piece.height);
+        });
+      }
+
+      draw(ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        this.pieces.forEach((piece) => piece.draw(ctx));
+      }
+
+      getMatchPercentage() {
+        const correctCount = this.pieces.filter((piece) => piece.isCorrect()).length;
+        return correctCount / this.pieces.length;
+      }
+
+      isComplete() {
+        return this.getMatchPercentage() === 1; // All pieces must match
+      }
+
+      getPieceAt(x, y) {
+        return this.pieces.find((piece) => piece.contains(x, y));
+      }
+    }
+
+    function loadLevel(levelIndex) {
+      currentLevel = levelIndex;
+      const level = levels[levelIndex];
+      const image = new Image();
+      image.src = level.image;
+
+      image.onload = () => {
+        board = new JigsawBoard(level.rows, level.cols, image);
+        board.draw(ctx);
+        levelDisplay.textContent = levelIndex + 1;
+        nextLevelButton.disabled = true;
+        messageDisplay.textContent = '';
+
+        setTimeout(() => {
+          board.shuffle();
+          board.draw(ctx);
+        }, 2000); // Shuffle automatically after 2 seconds
+      };
+    }
+
+    function displayEndMessage() {
+      canvas.style.display = 'none';
+      document.getElementById('controls').style.display = 'none';
+      document.getElementById('level').style.display = 'none';
+
+      messageDisplay.classList.add('popup', 'end-message');
+      messageDisplay.textContent = '🎉 Congratulations! You completed all levels!';
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      draggingPiece = board.getPieceAt(x, y);
+      if (draggingPiece) {
+        offsetX = x - draggingPiece.x;
+        offsetY = y - draggingPiece.y;
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (draggingPiece) {
+        const rect = canvas.getBoundingClientRect();
+        draggingPiece.x = e.clientX - rect.left - offsetX;
+        draggingPiece.y = e.clientY - rect.top - offsetY;
+        board.draw(ctx);
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      if (draggingPiece) {
+        draggingPiece = null;
+        if (board.isComplete()) {
+          messageDisplay.textContent = `🎉 Completed level ${currentLevel + 1}!`;
+          nextLevelButton.disabled = false;
+        } else if (board.getMatchPercentage() >= 0.8 && board.getMatchPercentage() < 1) {
+          messageDisplay.textContent = '⚠️ Almost there! Keep going!';
+        } else {
+          messageDisplay.textContent = '';
+        }
+      }
+    });
+
+    shuffleButton.addEventListener('click', () => {
+      board.shuffle();
+      board.draw(ctx);
+      messageDisplay.textContent = '';
+    });
+
+    resetButton.addEventListener('click', () => {
+      board.initPieces();
+      board.draw(ctx);
+      messageDisplay.textContent = '';
+    });
+
+    nextLevelButton.addEventListener('click', () => {
+      if (currentLevel + 1 < levels.length) {
+        loadLevel(currentLevel + 1);
+      } else {
+        displayEndMessage();
+      }
+    });
+
+    loadLevel(0);
+  </script>
+</body>
+</html>
