@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zazu Race Game</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 1;
+      background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(50, 50, 50, 0.9));
+      padding: 25px;
+      border-radius: 15px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ui h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #ffd700;
+    }
+
+    .ui p {
+      font-size: 1rem;
+      margin: 10px 0;
+    }
+
+    .ui button {
+      padding: 12px 30px;
+      margin: 10px 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    #score {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #00ff00;
+    }
+
+    canvas {
+      display: block;
+      border: 5px solid rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+      background-image: linear-gradient(
+        rgba(0, 0, 0, 0.5), 
+        rgba(0, 0, 0, 0.5)
+      ), 
+      url('./images/img5.jpg');
+      background-size: cover;
+      background-position: 0px 100%;
+    }
+
+    .popup {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(1);
+      background: rgba(0, 0, 0, 0.8);
+      color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+      transition: transform 0.3s ease-in-out;
+      z-index: 10;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .popup.hidden {
+      transform: translate(-50%, -50%) scale(0);
+      display: none;
+    }
+
+    .popup h2 {
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+      color: #ff7e5f;
+    }
+
+    .popup button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      background: #00aaff;
+      border: none;
+      border-radius: 5px;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .popup button:hover {
+      background: #007acc;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div class="ui">
+    <h1>Zazu Subway</h1>
+    <p>Use <b>Arrow Keys</b> to move Zazu!</p>
+    <button onclick="startGame()">Start Game</button>
+    <p id="score">Score: 0</p>
+  </div>
+
+  <div class="popup hidden" id="gameOverPopup">
+    <h2>Game Over!</h2>
+    <p id="finalScore">Your Score: 0</p>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+
+  <script>
+    let scene, camera, renderer, car, road, obstacles = [];
+    let moveLeft = false, moveRight = false;
+    let gameRunning = false;
+    let score = 0;
+    let obstacleSpeed = 0.5;
+
+    const ROAD_WIDTH = 30;
+    const CAR_SPEED = 0.8;
+
+    const bgMusic = new Audio('./audio/adventure-game-track.mp3'); // Replace with actual URL
+    const collisionSound = new Audio('./audio/game-over.mp3'); // Replace with actual URL
+    const scoreSound = new Audio('./audio/coin.mp3'); // Replace with actual URL
+
+    bgMusic.loop = true;
+
+    function init() {
+      const textureLoader = new THREE.TextureLoader();
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 10, 25);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const light = new THREE.AmbientLight(0xffffff, 0.8);
+      scene.add(light);
+
+      const roadTexture = textureLoader.load('https://res.cloudinary.com/dyp5px1nj/image/upload/v1732866774/bg1_s62fqx.webp');
+      roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
+      roadTexture.repeat.set(1, 0);
+
+      const roadMaterial = new THREE.MeshLambertMaterial({ map: roadTexture });
+      const roadGeometry = new THREE.PlaneGeometry(ROAD_WIDTH, 200);
+      road = new THREE.Mesh(roadGeometry, roadMaterial);
+      road.rotation.x = -Math.PI / 2;
+      road.position.y = -1;
+      scene.add(road);
+
+      const carTexture = textureLoader.load('https://www.zazucat.xyz/assets/images/zazu-hero.gif');
+      const carMaterial = new THREE.SpriteMaterial({ map: carTexture });
+      car = new THREE.Sprite(carMaterial);
+      car.scale.set(5, 5, 1);
+      car.position.set(0, 1, 0);
+      scene.add(car);
+
+      createObstacle();
+
+      window.addEventListener('resize', onWindowResize);
+      document.addEventListener('keydown', onKeyDown);
+      document.addEventListener('keyup', onKeyUp);
+
+      render();
+    }
+
+    function createObstacle() {
+      const obstacleGeometry = new THREE.BoxGeometry(5, 8, 3);
+      const obstacleMaterial = new THREE.MeshLambertMaterial({ color: 0xffff00 });
+      const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+
+      const randomX = Math.random() * (ROAD_WIDTH - 4) - ROAD_WIDTH / 2 + 2;
+      obstacle.position.set(randomX, 1, -100);
+      scene.add(obstacle);
+      obstacles.push(obstacle);
+
+      if (gameRunning) {
+        setTimeout(createObstacle, 800); // Faster obstacle creation
+      }
+    }
+
+    function startGame() {
+      gameRunning = true;
+      score = 0;
+      obstacles.forEach(obstacle => scene.remove(obstacle));
+      obstacles = [];
+      car.position.set(0, 1, 0);
+      obstacleSpeed = 0.8; // Increased speed
+      bgMusic.play(); // Start music
+      createObstacle();
+
+      // Hide the popup
+      const popup = document.getElementById('gameOverPopup');
+      popup.classList.add('hidden');
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      bgMusic.pause();
+      collisionSound.play();
+      const popup = document.getElementById('gameOverPopup');
+      document.getElementById('finalScore').innerText = `Your Score: ${score}`;
+      popup.classList.remove('hidden');
+    }
+
+    function restartGame() {
+      const popup = document.getElementById('gameOverPopup');
+      popup.classList.add('hidden');
+      startGame();
+    }
+
+    function render() {
+      if (gameRunning) {
+        road.material.map.offset.y += obstacleSpeed / 200;
+
+        if (moveLeft && car.position.x > -ROAD_WIDTH / 2 + 2) {
+          car.position.x -= CAR_SPEED;
+        }
+        if (moveRight && car.position.x < ROAD_WIDTH / 2 - 2) {
+          car.position.x += CAR_SPEED;
+        }
+
+        obstacles.forEach(obstacle => {
+          obstacle.position.z += obstacleSpeed;
+
+          if (
+            Math.abs(obstacle.position.x - car.position.x) < 3 &&
+            Math.abs(obstacle.position.z - car.position.z) < 3
+          ) {
+            gameOver();
+          }
+        });
+
+        obstacles = obstacles.filter(obstacle => {
+          if (obstacle.position.z > 50) {
+            scene.remove(obstacle);
+            score += 1;
+            document.getElementById('score').innerText = `Score: ${score}`;
+            scoreSound.play();
+            return false;
+          }
+          return true;
+        });
+      }
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(render);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function onKeyDown(event) {
+      if (event.code === 'ArrowLeft') moveLeft = true;
+      if (event.code === 'ArrowRight') moveRight = true;
+    }
+
+    function onKeyUp(event) {
+      if (event.code === 'ArrowLeft') moveLeft = false;
+      if (event.code === 'ArrowRight') moveRight = false;
+    }
+
+    init();
+  </script>
+</body>
+</html>
